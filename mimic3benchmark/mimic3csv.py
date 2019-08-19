@@ -76,8 +76,9 @@ def merge_on_subject_admission(table1, table2):
 
 
 def add_age_to_icustays(stays):
-    stays['AGE'] = (stays.INTIME - stays.DOB).apply(lambda s: s / np.timedelta64(1, 's')) / 60./60/24/365
-    stays.ix[stays.AGE < 0, 'AGE'] = 90
+    toordinal = lambda x: x.toordinal()  # convert timestamp to Gregorian ordinal to prevent integer overflow during subtraction
+    stays['AGE'] = (stays.INTIME.apply(toordinal) - stays.DOB.apply(toordinal)) / 365.2425
+    stays.loc[stays.AGE > 200, 'AGE'] = 90
     return stays
 
 

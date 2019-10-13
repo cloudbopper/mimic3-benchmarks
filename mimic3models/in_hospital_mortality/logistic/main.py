@@ -54,6 +54,8 @@ def main():
     (train_X, train_y, train_names) = read_and_extract_features(train_reader, args.period, args.features)
     (val_X, val_y, val_names) = read_and_extract_features(val_reader, args.period, args.features)
     (test_X, test_y, test_names) = read_and_extract_features(test_reader, args.period, args.features)
+    import pdb
+    pdb.set_trace()
     print('  train data shape = {}'.format(train_X.shape))
     print('  validation data shape = {}'.format(val_X.shape))
     print('  test data shape = {}'.format(test_X.shape))

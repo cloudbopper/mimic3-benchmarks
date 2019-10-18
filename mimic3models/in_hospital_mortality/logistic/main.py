@@ -54,8 +54,6 @@ def main():
     (train_X, train_y, train_names) = read_and_extract_features(train_reader, args.period, args.features)
     (val_X, val_y, val_names) = read_and_extract_features(val_reader, args.period, args.features)
     (test_X, test_y, test_names) = read_and_extract_features(test_reader, args.period, args.features)
-    import pdb
-    pdb.set_trace()
     print('  train data shape = {}'.format(train_X.shape))
     print('  validation data shape = {}'.format(val_X.shape))
     print('  test data shape = {}'.format(test_X.shape))
@@ -73,6 +71,11 @@ def main():
     train_X = scaler.transform(train_X)
     val_X = scaler.transform(val_X)
     test_X = scaler.transform(test_X)
+
+    print('Writing data ...')
+    data_dir = os.path.join(args.output_dir, 'data')
+    common_utils.create_directory(data_dir)
+    common_utils.write_data(data_dir, train_X, val_X, test_X, train_y, val_y, test_y)
 
     penalty = ('l2' if args.l2 else 'l1')
     file_name = '{}.{}.{}.C{}'.format(args.period, args.features, penalty, args.C)

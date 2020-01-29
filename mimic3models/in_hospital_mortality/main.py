@@ -4,6 +4,7 @@ from __future__ import print_function
 import numpy as np
 import argparse
 import os
+import pickle
 import imp
 import re
 
@@ -45,8 +46,6 @@ discretizer = Discretizer(timestep=float(args.timestep),
                           store_masks=True,
                           impute_strategy='previous',
                           start_time='zero')
-
-discretizer_header = discretizer.transform(train_reader.read_example(0)["X"])[1].split(',')
 cont_channels = [i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1]
 
 normalizer = Normalizer(fields=cont_channels)  # choose here which columns to standardize
@@ -105,6 +104,13 @@ if args.load_state != "":
 # Read data
 train_raw = utils.load_data(train_reader, discretizer, normalizer, args.small_part)
 val_raw = utils.load_data(val_reader, discretizer, normalizer, args.small_part)
+
+# Write out pre-processed data
+with open("in-hospital-mortality.pkl", "wb") as data_file:
+    pickle.dump(train_raw, data_file)
+    pickle.dump(discretizer_header, data_file)
+    pickle.dump(cont_channels, data_file)
+    pickle.dump(discretizer, data_file)
 
 if target_repl:
     T = train_raw[0][0].shape[0]

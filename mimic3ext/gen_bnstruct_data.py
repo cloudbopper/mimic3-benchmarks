@@ -1,9 +1,14 @@
+"""
+Legacy code to generate bnstruct-compatible input data from saved mimic benchmark data.
+Needs to be changed to work with updated saved formats (see ext_utils.py)
+"""
+
 import csv
 import pickle
 import numpy as np
 
 
-# Run from project root directory as "python -m scripts.refine"
+# Run from project root directory as "python -m scripts.gen_bnstruct_data"
 DATA_FILENAME = "data/preprocessed_lstm/in-hospital-mortality.pkl"
 QUANTIZATION_LEVELS = "4"  # for continuous variables 
 

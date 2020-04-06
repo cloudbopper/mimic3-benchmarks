@@ -15,6 +15,7 @@ from mimic3models.preprocessing import Discretizer, Normalizer
 from mimic3models import metrics
 from mimic3models import keras_utils
 from mimic3models import common_utils
+from mimic3ext import ext_utils
 
 from keras.callbacks import ModelCheckpoint, CSVLogger
 
@@ -96,6 +97,9 @@ model.compile(optimizer=optimizer_config,
               loss_weights=loss_weights)
 model.summary()
 
+ext_utils.initialize_saved(args.output_dir)
+ext_utils.write_model(model, args.output_dir)  # Write out model architecture
+
 # Load model weights
 n_trained_chunks = 0
 if args.load_state != "":
@@ -107,12 +111,12 @@ if args.load_state != "":
 train_raw = utils.load_data(train_reader, discretizer, normalizer, args.small_part)
 val_raw = utils.load_data(val_reader, discretizer, normalizer, args.small_part)
 
-# Write out pre-processed data
-with open("in-hospital-mortality.pkl", "wb") as data_file:
-    pickle.dump(train_raw, data_file)
-    pickle.dump(discretizer_header, data_file)
-    pickle.dump(cont_channels, data_file)
-    pickle.dump(discretizer, data_file)
+ext_utils.write_data(train_raw, args.output_dir, dtype=ext_utils.TRAIN)
+ext_utils.write_data(val_raw, args.output_dir, dtype=ext_utils.VAL)
+
+ext_utils.write_optional(discretizer, args.output_dir, ext_utils.DISCRETIZER_FILENAME)
+ext_utils.write_optional(discretizer_header, args.output_dir, ext_utils.DISCRETIZER_HEADER_FILENAME)
+ext_utils.write_optional(cont_channels, args.output_dir, ext_utils.CONT_CHANNELS_FILENAME)
 
 if target_repl:
     T = train_raw[0][0].shape[0]
@@ -178,6 +182,9 @@ elif args.mode == 'test':
     data = ret["data"][0]
     labels = ret["data"][1]
     names = ret["names"]
+
+    ext_utils.write_data((data, labels), args.output_dir, dtype=ext_utils.TEST)
+    ext_utils.write_optional(names, args.output_dir, ext_utils.NAMES_FILENAME)
 
     predictions = model.predict(data, batch_size=args.batch_size, verbose=1)
     predictions = np.array(predictions)[:, 0]

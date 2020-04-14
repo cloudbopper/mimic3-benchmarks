@@ -185,7 +185,7 @@ def create_directory(directory):
 def write_data(data_dir, train_X, val_X, test_X, train_y, val_y, test_y):
     arrs = {"train_X": train_X, "val_X": val_X, "test_X": test_X,
             "train_y": train_y, "val_y": val_y, "test_y": test_y}
-    for arr_name, arr in arrs:
+    for arr_name, arr in arrs.items():
         filename = "%s/%s.npy" % (data_dir, arr_name)
         np.save(filename, arr)
 

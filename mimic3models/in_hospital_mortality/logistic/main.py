@@ -13,6 +13,9 @@ import numpy as np
 import argparse
 import json
 
+import pickle
+import joblib
+
 
 def read_and_extract_features(reader, period, features):
     ret = common_utils.read_chunk(reader, reader.get_number_of_examples())
@@ -49,6 +52,20 @@ def main():
     test_reader = InHospitalMortalityReader(dataset_dir=os.path.join(args.data, 'test'),
                                             listfile=os.path.join(args.data, 'test_listfile.csv'),
                                             period_length=48.0)
+
+    # Extract feature names
+    if args.features == "all" and args.period == "all":
+        reader = InHospitalMortalityReader(dataset_dir=os.path.join(args.data, 'train'),
+                                           listfile=os.path.join(args.data, 'train_listfile.csv'),
+                                           period_length=48.0)
+        feature_names = []
+        header = reader.read_next()["header"]
+        for item in header[1:]:  # First item is 'hours'
+            for sub_period in ["full-series", "first-10%", "first-25%", "first-50%", "last-10%", "last-25%", "last-50%"]:
+                for function in ["min", "max", "mean", "std", "skew", "count"]:
+                    feature_names.append(f"{item}->{sub_period}->{function}")
+        with open(os.path.join(args.output_dir, "feature_names.pkl"), "wb") as feature_names_file:
+            pickle.dump(feature_names, feature_names_file)
 
     print('Reading data and extracting features ...')
     (train_X, train_y, train_names) = read_and_extract_features(train_reader, args.period, args.features)
@@ -105,6 +122,18 @@ def main():
 
     save_results(test_names, prediction, test_y,
                  os.path.join(args.output_dir, 'predictions', file_name + '.csv'))
+
+    joblib.dump(logreg, os.path.join(args.output_dir, "lr.joblib"))  # Save model
+    # Generate ranked list of features
+    if args.features == "all" and args.period == "all":
+        coefs = logreg.coef_.reshape((714,))
+        features = list(zip(feature_names, coefs))
+        ranked = sorted(features, key=lambda pair: abs(pair[1]), reverse=True)
+        with open(os.path.join(args.output_dir, "ranked_features.csv"), "w") as ranked_features_file:
+            writer = csv.writer(ranked_features_file)
+            _ = writer.writerow(("Feature Name", "Coefficient Magnitude"))
+            for pair in ranked:
+                _ = writer.writerow(pair)
 
 
 if __name__ == '__main__':

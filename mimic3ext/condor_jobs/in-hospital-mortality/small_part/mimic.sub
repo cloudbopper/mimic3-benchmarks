@@ -1,0 +1,33 @@
+universe = vanilla
+
+# Name the log file:
+log = mimic.log
+
+# Name the files where standard output and error should be saved:
+output = process.out
+error = process.err
+
+# Executable (disable if interactive job)
+executable = cmds.sh
+
+# Send email notification upon completion
+notification = Always
+notify_user = sood@cs.wisc.edu
+
+# Indicate all files that need to go into the job session
+transfer_input_files = cmds.sh, ../in-hospital-mortality.tar.gz
+
+# Enable non-general use machines
++WantFlocking = true
+
+# Request machine with specific GPU
+# requirements = ( TARGET.CUDADeviceName == "GeForce RTX 2080 Ti" )
+
+# Request computing resources
+request_cpus = 1
+request_gpus = 1
+request_memory = 4GB
+request_disk = 8GB
+
+# Enqueue job
+queue

@@ -7,7 +7,7 @@ import subprocess
 
 import cloudpickle
 import anamod
-from anamod import TemporalModelAnalyzer
+from anamod import ModelAnalyzer
 import numpy as np
 
 from mimic3ext import ext_utils, model_loader, ModelWrapper
@@ -52,9 +52,10 @@ def main():
 
     logger.info("Analyzing model")
     # TODO: Provide feature names (discretizer_header)
-    analyzer = TemporalModelAnalyzer(model, data, targets,
-                                     output_dir=args.output_dir, model_loader_filename=os.path.abspath(model_loader.__file__),
-                                     condor=True, shared_filesystem=True, features_per_worker=1, cleanup=False)
+    analyzer = ModelAnalyzer(model, data, targets,
+                             output_dir=args.output_dir, model_loader_filename=os.path.abspath(model_loader.__file__),
+                             condor=True, shared_filesystem=True, features_per_worker=1, cleanup=False,
+                             window_search_algorithm="effect_size", num_shuffling_trials=50)
     features = analyzer.analyze()
     with open(f"{args.output_dir}/features.cpkl", "wb") as features_file:
         cloudpickle.dump(features, features_file)
@@ -62,3 +63,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

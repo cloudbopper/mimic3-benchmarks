@@ -15,7 +15,8 @@ MODULE_DIR = f"{os.path.dirname(__file__)}/.."
 DEFAULT_NETWORK_FILE = f"{MODULE_DIR}/mimic3models/keras_models/lstm.py"
 def build_model(state_filename="",
                 strargs=(f"--network {DEFAULT_NETWORK_FILE} "
-                         "--dim 16 --timestep 1.0 --depth 2 --dropout 0.3 --mode train --batch_size 8")):
+                         "--dim 16 --timestep 1.0 --depth 2 --dropout 0.3 --mode train --batch_size 8"),
+                input_dim=None):
     """
     Build in-hospital-mortality LSTM model
     Tried to make it as identical as possible to mimic3models/in_hospital_mortality/main.py
@@ -32,6 +33,10 @@ def build_model(state_filename="",
     args_dict = dict(args._get_kwargs())
     args_dict['task'] = 'ihm'
     args_dict['target_repl'] = target_repl
+
+    # Input dimension
+    if input_dim is not None:
+        args_dict["input_dim"] = input_dim
 
     # Build the model
     print("==> using model {}".format(args.network))

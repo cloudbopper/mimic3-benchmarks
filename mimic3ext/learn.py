@@ -32,13 +32,12 @@ def main():
     if args.state_filename:
         model = build_model(args.state_filename)
     else:
-        model = build_model()
-        train(args, model)
+        model = train(args)
     # Test model
     test(args, model)
     
 
-def train(args, model):
+def train(args):
     """Train model"""
     train_filename = f"{args.input_dir}/{ext_utils.TRAIN}_{ext_utils.DATA_FILENAME}"
     train_raw = list(np.load(train_filename).values())
@@ -46,6 +45,7 @@ def train(args, model):
     val_raw = list(np.load(val_filename).values())
 
     # Prepare training
+    model = build_model(input_dim=train_raw[0].shape[2])
     path = os.path.join(args.output_dir, 'keras_states/' + model.final_name + '.epoch{epoch}.test{val_loss}.state')
 
     metrics_callback = keras_utils.InHospitalMortalityMetrics(train_data=train_raw,

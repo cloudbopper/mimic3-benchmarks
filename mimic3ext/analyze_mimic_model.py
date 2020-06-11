@@ -3,6 +3,7 @@
 import argparse
 import glob
 import os
+import shutil
 import subprocess
 
 import cloudpickle
@@ -45,17 +46,20 @@ def main():
     model = ModelWrapper(tf_model)
 
     logger.info("Loading data")
-    np_data = np.load(f"{args.input_dir}/{SAVED_DIR}/{ext_utils.TEST}_{ext_utils.DATA_FILENAME}")
+    np_data = np.load(f"{args.input_dir}/{SAVED_DIR}/{ext_utils.VAL}_{ext_utils.DATA_FILENAME}")
     data = np_data["arr_0"]
     data = np.transpose(data, (0, 2, 1))  # to get instances X features X timestamps
     targets = np_data["arr_1"]
 
+    # Copy file containing feature names
+    shutil.copy(f"{args.input_dir}/{SAVED_DIR}/{ext_utils.DISCRETIZER_HEADER_FILENAME}", args.output_dir)
+
     logger.info("Analyzing model")
-    # TODO: Provide feature names (discretizer_header)
     analyzer = ModelAnalyzer(model, data, targets,
                              output_dir=args.output_dir, model_loader_filename=os.path.abspath(model_loader.__file__),
                              condor=True, shared_filesystem=True, features_per_worker=1, cleanup=False,
-                             window_search_algorithm="effect_size", num_shuffling_trials=50)
+                             window_search_algorithm="effect_size", num_shuffling_trials=10,
+                             retry_arbitrary_failures=1)
     features = analyzer.analyze()
     with open(f"{args.output_dir}/features.cpkl", "wb") as features_file:
         cloudpickle.dump(features, features_file)

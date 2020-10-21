@@ -30,7 +30,9 @@ def main():
 
     # Load or train model
     if args.state_filename:
-        model = build_model(args.state_filename)
+        val_filename = f"{args.input_dir}/{ext_utils.VAL}_{ext_utils.DATA_FILENAME}"
+        val_raw = list(np.load(val_filename).values())
+        model = build_model(args.state_filename, input_dim=val_raw[0].shape[2])
     else:
         model = train(args)
     # Test model

@@ -58,8 +58,9 @@ def main():
     analyzer = ModelAnalyzer(model, data, targets,
                              output_dir=args.output_dir, model_loader_filename=os.path.abspath(model_loader.__file__),
                              condor=True, shared_filesystem=True, features_per_worker=1, cleanup=False,
-                             window_search_algorithm="effect_size", num_shuffling_trials=10,
-                             retry_arbitrary_failures=1)
+                             window_search_algorithm="effect_size", retry_arbitrary_failures=1,
+                             num_shuffling_trials=200,
+                             window_effect_size_threshold=0.05)
     features = analyzer.analyze()
     with open(f"{args.output_dir}/features.cpkl", "wb") as features_file:
         cloudpickle.dump(features, features_file)

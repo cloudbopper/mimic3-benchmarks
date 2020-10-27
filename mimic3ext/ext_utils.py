@@ -21,6 +21,9 @@ TRAIN = "train"
 VAL = "val"
 TEST = "test"
 
+# Misc
+EPOCHS = 100
+
 
 def initialize_saved(output_dir):
     """Initialize saved directory"""

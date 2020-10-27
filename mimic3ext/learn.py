@@ -14,7 +14,6 @@ from mimic3models.in_hospital_mortality import utils
 BATCH_SIZE = 8
 SAVE_EVERY = 1
 VERBOSE = 2
-EPOCHS = 100
 
 
 def main():
@@ -23,6 +22,7 @@ def main():
     parser.add_argument("-input_dir", required=True)
     parser.add_argument("-output_dir", required=True)
     parser.add_argument("-state_filename", help="If provided, load model weights from state file instead of training model")
+    parser.add_argument("-epochs", type=int, default=ext_utils.EPOCHS)
     args = parser.parse_args()
 
     if not os.path.exists(args.output_dir):
@@ -37,7 +37,7 @@ def main():
         model = train(args)
     # Test model
     test(args, model)
-    
+
 
 def train(args):
     """Train model"""
@@ -71,7 +71,7 @@ def train(args):
     model.fit(x=train_raw[0],
               y=train_raw[1],
               validation_data=val_raw,
-              epochs=EPOCHS,
+              epochs=args.epochs,
               initial_epoch=0,
               callbacks=[metrics_callback, saver, csv_logger],
               shuffle=True,
@@ -86,7 +86,7 @@ def test(args, model):
     test_filename = f"{args.input_dir}/{ext_utils.TEST}_{ext_utils.DATA_FILENAME}"
     data, labels = list(np.load(test_filename).values())
     names = [f"Feature {idx}" for idx in range(data.shape[2])]
-    
+
 
     predictions = model.predict(data, batch_size=BATCH_SIZE, verbose=1)
     predictions = np.array(predictions)[:, 0]

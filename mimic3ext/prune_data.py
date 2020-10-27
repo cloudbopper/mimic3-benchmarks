@@ -20,7 +20,7 @@ def main():
     parser.add_argument("-output_dir", required=True)
     parser.add_argument("-randomize_features", action="store_true", help="Instead of selecting features/timesteps listed in features file,"
                         " select a random set of features/timesteps of the same size")
-    parser.add_argument("-seed", default=1241255801, help="RNG seed for randomizing features")
+    parser.add_argument("-seed", type=int, default=1241255801, help="RNG seed for randomizing features")
     args = parser.parse_args()
 
     if not os.path.exists(args.output_dir):

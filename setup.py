@@ -4,10 +4,11 @@ from setuptools import find_packages, setup
 
 setup(
     install_requires=[
-        "Keras",
         "numpy",
+        "pandas",
         "scikit-learn",
-        "pandas"
+        "Keras==2.3.1",
+        "tensorflow==2.1.0"
     ],
     name="mimic3benchmarks",
     packages=find_packages(),

@@ -1,6 +1,7 @@
 """Generate pruned datasets and train models"""
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import tarfile
@@ -19,7 +20,7 @@ def main():
     parser.add_argument("-data_dir", required=True, help="Directory containing original data set in requisite folder structure (small part or all data)")
     parser.add_argument("-features_filename", required=True, help="Features cloudpickle file that provides that pruning information")
     parser.add_argument("-start_seed", type=int, default=1284171779)
-    parser.add_argument("-num_datasets", type=int, default=2)
+    parser.add_argument("-num_datasets", type=int, default=20)
     parser.add_argument("-modes", choices=[PREPROCESS, TRAIN, EVALUATE], nargs="+", required=True)
     args = parser.parse_args()
     return pipeline(args)
@@ -59,10 +60,23 @@ def pipeline(args):
             subprocess.check_call(cmd, shell=True)
             os.chdir(cwd)
     if EVALUATE in args.modes:
-        last_aucs = np.zeros(args.num_datasets)
-        best_aucs = np.zeros(args.num_datasets)
+        rocs = np.zeros((2, args.num_datasets))
+        prcs = np.zeros((2, args.num_datasets))
         for idx, run_dir in enumerate(run_dirs):
-            pass  # TODO: parse outputs and identify AUCs
+            logs = [f"{run_dir}/train_test.log", f"{run_dir}/test_best.log"]
+            for lidx, log in enumerate(logs):
+                with open(log, "r") as log_file:
+                    for line in reversed(list(log_file)):
+                        match = re.search(r"AUC of (PRC|ROC) = (0\.\d+)", line)
+                        if match:
+                            dtype, value = match.groups()
+                            value = float(value)
+                            if dtype == "PRC":
+                                prcs[lidx, idx] = value
+                            elif dtype == "ROC":
+                                rocs[lidx, idx] = value
+                                break  # Found both AUPRC and AUROC
+        np.savez("aucs.npz", rocs=rocs, prcs=prcs)
 
 
 if __name__ == "__main__":
